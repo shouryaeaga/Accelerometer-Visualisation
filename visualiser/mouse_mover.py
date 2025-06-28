@@ -1,5 +1,5 @@
 import argparse
-from pyray import *
+from pynput.mouse import Button, Controller
 import serial
 from ahrs.filters import Madgwick
 import numpy as np
@@ -12,11 +12,11 @@ gx = 0
 gy = 0
 gz = 0
 
-
 dt = 0.05
 
 madgwick = Madgwick()
 
+mouse = Controller()
 
 def main():
     parser = argparse.ArgumentParser(description="Python script to visualise incoming serial data about acceleration and rotation")
@@ -29,32 +29,12 @@ def main():
 
     ser = serial.Serial(args.port, args.baudrate)
 
-    screen_width = 1280
-    screen_height = 720
-    init_window(screen_width, screen_height, b"Serial Data Visualisation")
-
-    camera = Camera3D()
-    camera.position = Vector3(20, 20, 0)
-    camera.target = Vector3(0, 0, 0)
-    camera.up = Vector3(0, 1, 0)
-    camera.fovy = 45.0
-    camera.projection = CameraProjection.CAMERA_PERSPECTIVE
-
-
-    cubeMesh = gen_mesh_cube(1.0, 1.0, 1.0)
-    cubeModel = load_model_from_mesh(cubeMesh)
-    
-
-
-    cubePosition = Vector3(0, 0, 0)
 
     q = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float64)  # Initial quaternion
 
-    set_target_fps(20)
 
-    while not window_should_close():
+    while True:
         # Update
-        update_camera(camera, CameraMode.CAMERA_FREE)
 
         if ser.in_waiting > 0:
             try:
@@ -86,22 +66,12 @@ def main():
             ax = ay = az = 0
         
         # Update cube position based on orientation
-       
-        cubeModel.transform = matrix_rotate_xyz(Vector3(-pitch, -yaw, -roll))
+        # Update mouse position
 
-        # Draw
-        begin_drawing()
-        clear_background(RAYWHITE)
-        
-        begin_mode_3d(camera)
-        draw_model_ex(cubeModel, cubePosition, Vector3(0, 0, 1), 1.0, Vector3(1.0, 1.0, 1.0), RED)
-        draw_grid(10, 1.0)
-        end_mode_3d()
+        mouse.move(int(roll*5), int(-pitch*5))
 
-        end_drawing()
     
     ser.close()
-    close_window()  # Close window and OpenGL context
     
 if __name__ == "__main__":
     main()

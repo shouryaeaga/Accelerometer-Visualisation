@@ -50,7 +50,7 @@ def main():
             gzValues.append(gz)
             samples += 1
 
-        if is_key_pressed(KEY_ESCAPE):
+        if is_key_pressed(KeyboardKey.KEY_ESCAPE):
             print("Exiting...")
             break
 
